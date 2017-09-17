@@ -50,6 +50,18 @@ var donorMustBePickedUpByDateIndex = 16;
 var donorPickupLocationNotes = 17;
 var donorAdditionalComments = 55
 
+var clientName = 8;
+
+var clientAddressNumberIndex = 12;
+var clientAddressNameIndex = 13;
+var clientCityIndex = 8;
+var clientStateIndex = 9;
+var clientZipIndex = 14; //none
+var clientEmailIndex = 13;
+var clientPhoneIndex = 9;
+var clientBackupPhoneIndex = 11;
+var clientFurnitureDescription = 29;
+
 var donorHeaders = [];
 
 var clientPinColor = 'fff838';
@@ -61,6 +73,7 @@ var clientType = "CLIENT";
 var notConfirmedStatus = "NotConfirmed";
 var confirmedStatus = "Confirmed";
 var inProgressStatus = "InProgress";
+
 
 var allData = [];
 
@@ -138,6 +151,24 @@ function Item(type, status, rowId, rowData, sheet) {
     this.whatFurniture = GetFurnitureList(type, rowData);
 }
 
+function ClientItem(type, status, rowId, rowData, sheet) {
+    this.type = type;
+    this.status = status;
+    this.rowId = rowId;
+    this.rowData = rowData;
+    this.name = rowData[clientName];
+    this.phone = rowData[clientPhoneIndex];
+    this.backupPhone = rowData[clientBackupPhoneIndex];
+    this.address = rowData[clientAddressNumberIndex] + " " + rowData[clientAddressNameIndex];
+    this.city = ""; //Not on form
+    this.state = "PA";
+    this.zip = rowData[clientZipIndex];
+    this.sheet = sheet;
+    this.marker = null;
+    this.listElement = null;
+    this.whatFurniture = rowData[clientFurnitureDescription];
+}
+
 function GetFurnitureList(type, row) {
     var furniture = [];
     for(var i = donorFurnitureStart; i <= donorFurnitureEnd; i++) {
@@ -154,72 +185,72 @@ function GetFurnitureList(type, row) {
 function initData() {
     gapi.client.sheets.spreadsheets.values.batchGet({
         spreadsheetId: donorSpreadsheetId,
-        ranges: ['Form Responses','In Progress','Confirmed'],
+        ranges: ['Form Responses', 'In Progress', 'Confirmed'],
     }).then(function (donorResponse) {
-        allData = convertDonorResponseToItems(donorResponse.result.valueRanges, donorSpreadsheetId);
+        convertDonorResponseToItems(donorResponse.result.valueRanges, donorSpreadsheetId);
         gapi.client.sheets.spreadsheets.values.batchGet({
             spreadsheetId: clientSpreadsheetId,
             ranges: ['Form Responses 1', 'In Progress'],
         }).then(function (clientResponse) {
-                convertDonorResponseToItems(clientResponse.result.valueRanges, clientSpreadsheetId);
-                initMap(allData);
-                initList(allData);
-            }, function (clientResponse) {
-                appendPre('Error: ' + response.result.error.message);
+            convertClientResponseToItems(clientResponse.result.valueRanges, clientSpreadsheetId);
+            initMap(allData);
+            initList(allData);
+        }, function (clientResponse) {
+            alert('Error: ' + clientResponse.result.error.message);
         });
-    }, function (response) {
-        appendPre('Error: ' + response.result.error.message);
+    }, function (donorResponse) {
+        alert('Error: ' + donorResponse.result.error.message);
     });
 }
 
 function convertDonorResponseToItems(responseValues, sheetId) {
-    var newArray = [];
+    allData = [];
 
     //Init data loads this range: 'Form Responses','In Progress'
-    var formResponseValues = responseValues[0].values;
-    var inProgressValues = responseValues[1].values;
-    //Process Each value range
-    
-    for (var i = 1; i < formResponseValues.length; i++) {
-        var newObj = new Item(donorNewItemSheet.id, i, formResponseValues[i], donorSpreadsheetId); 
-        allData.push(newObj);
-    }
-
-    for (var i = 1; i < inProgressValues.length; i++) {
-        var newObj = new Item(donorInProgressSheet.id, i, inProgressValues[i], donorSpreadsheetId);
-        allData.push(newObj);
-    }
-
-    return newArray;
-}
-
-function convertClientResponseToItems(responseValues, sheetId) {
-    var newArray = [];
-
-    //Init data loads this range: 'Form Responses','In Progress','Confirmed'
     var formResponseValues = responseValues[0].values;
     var inProgressValues = responseValues[1].values;
     var confirmedValues = responseValues[2].values;
     //Process Each value range
 
-    donorHeaders = responseValues[0].values[0];
+    donorHeaders = formResponseValues[0];
 
     for (var i = 1; i < formResponseValues.length; i++) {
-        var newObj = new Item(donorType, notConfirmedStatus, i, formResponseValues[i], donorSpreadsheetId); 
-        newArray.push(newObj);
+        var newObj = new Item(donorType, notConfirmedStatus, formResponseValues[i], donorSpreadsheetId); 
+        allData.push(newObj);
     }
 
     for (var i = 1; i < inProgressValues.length; i++) {
         var newObj = new Item(donorType, inProgressStatus, i, inProgressValues[i], donorSpreadsheetId);
-        newArray.push(newObj);
+        allData.push(newObj);
     }
 
-    for (var i = 1; i < confirmedValues.length; i++) {
-        var newObj = new Item(donorType, confirmedStatus, i, confirmedValues[i], donorSpreadsheetId);
-        newArray.push(newObj);
+    for (var i = 1; i < inProgressValues.length; i++) {
+        var newObj = new Item(donorType, confirmedStatus, i, inProgressValues[i], donorSpreadsheetId);
+        allData.push(newObj);
     }
 
-    return newArray;
+
+}
+
+function convertClientResponseToItems(responseValues, sheetId) {
+
+    //Init data loads this range: 'Form Responses','In Progress'
+    var formResponseValues = responseValues[0].values;
+    var inProgressValues = responseValues[1].values;
+
+    //Process Each value range
+
+    donorHeaders = responseValues[0].values[0];
+
+    for (var i = 1; i < formResponseValues.length; i++) {
+        var newObj = new ClientItem(clientType, notConfirmedStatus, i, formResponseValues[i], clientSpreadsheetId); 
+        allData.push(newObj);
+    }
+
+    for (var i = 1; i < inProgressValues.length; i++) {
+        var newObj = new ClientItem(clientType, inProgressStatus, i, inProgressValues[i], clientSpreadsheetId);
+        allData.push(newObj);
+    }
 }
 
 
@@ -396,14 +427,61 @@ function pincolor(item) {
  * 
  */
 
+//function initList(itemData) {
+//    console.log('TODO Generate init List!');
+
+//    for (var i = 1; i < itemData.length; i++) {
+//        if (itemData[i].status == inProgressStatus) {
+//            $('#list').html($('#list').html() + "Name: " + itemData[i].name + " " + itemData[i].whatFurniture + "<br /><br />");
+//        }
+//    }
+//}
+
 function initList(itemData) {
-    console.log('TODO Generate init List!');
+    var htmlStr = '';
+    var temp = 0;
 
     for (var i = 1; i < itemData.length; i++) {
-        if (itemData[i].type == donorInProgressSheet.id) {
-            $('#list').html($('#list').html() + itemData[i].name + " " + itemData[i].whatFurniture + "<br /><br />");
+        console.log(itemData[i].address);
+        if (itemData[i].status == inProgressStatus) {
+            var row = itemData[i];
+            temp = temp + 1;
+            var strTemp = ((temp % 2 == 0) ? '2' : '');
+
+            htmlStr +=
+                '<div class="section' + strTemp + '">' +
+                '<div class="results">' +
+                '<div class="title">Name </div>' +
+                '<div class="content">' + row.name + '</div>' +
+                '</div>' +
+                '<div class="results">' +
+                '<div class="title">Phone </div>' +
+                '<div class="content">' + row.phone + '</div>' +
+                '</div>' +
+                '<div class="results">' +
+                '<div class="title">Alt Phone </div>' +
+                '<div class="content">' + row.backupPhone + '</div>' +
+                '</div>' +
+                '<div class="results">' +
+                '<div class="title">Address </div>' +
+                '<div class="content">' + row.address + '</div>' +
+                '</div>' +
+                '<div class="results">' +
+                '<div class="title">City, State, Zip </div>' +
+                '<div class="content">' + row.city + ', ' + row.state + ' ' + row.zip + '</div>' +
+                '</div>' +
+                '<div class="results">' +
+                '<div class="title">What </div>' +
+                '<div class="content">' + row.whatFurniture + '</div>' +
+                '</div>' +
+                '<div class="btns"><a class="x" href="#">x</a></div>' +
+                '<div class="btns"><a class="done" href="#">Completed</a></div>' +
+                '<div class="clear"> </div>' +
+                '</div>';
         }
     }
+
+    $('#wrapper').html(htmlStr);
 }
 
 function addToList(item) {

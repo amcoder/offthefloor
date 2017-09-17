@@ -24,3 +24,74 @@ Author: Administrator
   overflow: auto;
 }
 
+@charset "UTF-8";
+/* CSS Document */
+
+#wrapper{
+	position: relative;
+	max-width: 650px;
+}
+
+.clear{
+	clear: both;
+}
+#wrapper .thumb{
+	width: 120px;
+	height: 120px;
+	float: left;
+	margin-right: 20px;
+	background: #A8A8A8;
+}
+#wrapper .results{
+	background: none;
+	padding: 2px 0 2px 0;
+	font-family: Gotham, "Helvetica Neue", Helvetica, Arial, "sans-serif";
+	font-size: 14px;
+	float: left;
+	max-width: 320px;
+	}
+
+#wrapper .results .content, #wrapper .results .title{
+	float: left;
+}
+#wrapper .results .content{
+	margin-left: 10px;
+	width: 200px;
+}
+#wrapper .results .title{
+	width: 110px;
+	text-align: right;
+	font-weight: bold;
+}
+#wrapper .btns, #wrapper .btns2{
+	float:left;
+	min-width: 40px;
+	height: 40px;
+	font-family: Gotham, "Helvetica Neue", Helvetica, Arial, "sans-serif";
+	display: block;
+
+}
+.section, .section2{
+	padding:20px 0 5px 0;
+	height: 140px;
+	min-width: 600px;
+}
+.section2{
+	background: #ececec;
+}
+#wrapper .x {
+	padding:5px 10px 5px 10px;
+	background: #444444;
+	color:#ffffff;
+	border-radius: 4px;
+	text-decoration: none;
+
+}
+#wrapper .done{
+	padding:5px 10px 5px 10px;
+	background: #d85910;
+	color:#ffffff;
+	border-radius: 4px;
+	font-size: 14px;
+	text-decoration: none;
+}
