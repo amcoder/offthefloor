@@ -168,35 +168,51 @@ function updateSigninStatus(isSignedIn) {
  */
 
 function Confirm(item) {
-    return "TODO Generate Confirm";
+    moveToConfirmSheet(item);
+    updateMarker(item);
+    updateInfoWindow(item);
 }
 
-/*
-  item is any javascript object that contains the following properties:
-    {
-      rowid: N,     // The google sheet row id. The first row of data in the
-                    //sheet is rowid 2.
-
-      rowdata: ['value1', 'value2', ...] // The raw values for the data
-                                         // in this row
-    } 
-
-  The response to this call is the item object with the new row id set
-*/
-function moveToInProgress(item) {
-    moveItem(item, donorSpreadsheetId, donorNewSheet, donorInProgressSheet);
+function InProgress(item) {
+    moveToInProgressSheet(item);
+    updateInfoWindow(item);
+    addToList(item);
 }
 
 function CancelPickupOrDelivery(item) {
-    return "TODO Generate CancelPickupOrDelivery";
+    moveToConfirmSheet(item);
+    updateInfoWindow(item);
+    removeFromList(item);
 }
 
 function Complete(item) {
-    return "TODO Generate Complete";
+    moveToCompleteSheet(item);
+    removeMarker(item);
+    removeFromList(item);
 }
 
 function OrderItem(item, newindex) {
-    return "TODO Generate Complete";
+    orderItemOnSheet(item, newindex);
+}
+
+/**
+ * Sheet Management Section
+ *
+ */
+function moveToInProgressSheet(item) {
+    moveItem(item, donorSpreadsheetId, donorNewSheet, donorInProgressSheet);
+}
+
+function moveToConfirmSheet(item) {
+    moveItem(item, donorSpreadsheetId, donorNewSheet, donorInProgressSheet);
+}
+
+function moveToCompleteSheet(item) {
+    moveItem(item, donorSpreadsheetId, donorNewSheet, donorInProgressSheet);
+}
+
+function orderItemOnSheet(item, newindex) {
+    console.log("TODO: Write the orderItemOnSheet function");
 }
 
 /**
@@ -268,6 +284,14 @@ function initMap(itemData) {
     });
 }
 
+function updateMarker(item) {
+}
+
+function updateInfoWindow(item) {
+}
+
+function removeMarker(item) {
+}
 
 /**
  * List Section 
@@ -285,4 +309,10 @@ function initList(itemData) {
         console.log(itemData[i].address);
         $('#list').html($('#list').html() + itemData[i].name + "<br />")
     }
+}
+
+function addToList(item) {
+}
+
+function removeFromList(item) {
 }
