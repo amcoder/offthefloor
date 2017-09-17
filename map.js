@@ -47,6 +47,8 @@ var donorMustBePickedUpByDateIndex = 16;
 var donorPickupLocationNotes = 17;
 var donorAdditionalComments = 55
 
+var donorHeaders = [];
+
 /**
 * Initialization and Authentication
 */
@@ -108,10 +110,14 @@ function Item(type, rowId, rowData, sheet) {
 }
 
 function GetFurnitureList(type, row) {
-    return "TODO Generate Furniture List";
+    var furniture = [];
+    for(var i = donorFurnitureStart; i <= donorFurnitureEnd; i++) {
+        if(row[i]) {
+            furniture.push(donorHeaders[i] + " (" + row[i] + ")");
+        }
+    }
+    return furniture.join(", ");
 }
-
-
 
 /**
 * Initialize OTF Data from spreadsheets
@@ -132,6 +138,8 @@ function initData() {
 
 function convertResponseToItems(responseValues) {
     var newArray = [];
+
+    donorHeaders = responseValues[0];
 
     for (var i = 1; i < responseValues.length; i++) {
         var newObj = new Item("InProgress", i, responseValues[i], donorSpreadsheetId); 
