@@ -8,6 +8,9 @@ var DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"
 // included, separated by spaces.
 var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
+// client spreadsheet settings
+var clientSpreadsheetId = '14AFKDSVe2Xz3PpARKDC5xIHE4zVyNXmN81_m4Fdhks8';
+
 // donor spreadsheet settings
 var donorSpreadsheetId = '1JNFSq8cxu1euM19om7--48upRRXguR2Hzfxd4I4Q7oc';
 var donorNewItemSheet = {
@@ -48,6 +51,8 @@ var donorPickupLocationNotes = 17;
 var donorAdditionalComments = 55
 
 var donorHeaders = [];
+
+var allData = [];
 
 /**
 * Initialization and Authentication
@@ -126,30 +131,57 @@ function initData() {
     gapi.client.sheets.spreadsheets.values.batchGet({
         spreadsheetId: donorSpreadsheetId,
         ranges: ['Form Responses','In Progress','Confirmed'],
-    }).then(function (response) {
-        var itemListData = convertResponseToItems(response.result.valueRanges, donorSpreadsheetId);
-        initMap(itemListData);
-        initList(itemListData);
-
+    }).then(function (donorResponse) {
+        allData = convertDonorResponseToItems(donorResponse.result.valueRanges, donorSpreadsheetId);
+        gapi.client.sheets.spreadsheets.values.batchGet({
+            spreadsheetId: clientSpreadsheetId,
+            ranges: ['Form Responses 1', 'In Progress'],
+        }).then(function (clientResponse) {
+                convertDonorResponseToItems(clientResponse.result.valueRanges, clientSpreadsheetId);
+                initMap(allData);
+                initList(allData);
+            }, function (clientResponse) {
+                appendPre('Error: ' + response.result.error.message);
+        });
     }, function (response) {
         appendPre('Error: ' + response.result.error.message);
     });
 }
 
-function convertResponseToItems(responseValues, sheetId) {
+function convertDonorResponseToItems(responseValues, sheetId) {
     var newArray = [];
 
+    //Init data loads this range: 'Form Responses','In Progress'
+    var formResponseValues = responseValues[0].values;
+    var inProgressValues = responseValues[1].values;
+    //Process Each value range
+    
+    for (var i = 1; i < formResponseValues.length; i++) {
+        var newObj = new Item(donorNewItemSheet.id, i, formResponseValues[i], donorSpreadsheetId); 
+        allData.push(newObj);
+    }
+
+    for (var i = 1; i < inProgressValues.length; i++) {
+        var newObj = new Item(donorInProgressSheet.id, i, inProgressValues[i], donorSpreadsheetId);
+        allData.push(newObj);
+    }
+
+    return newArray;
+}
+
+function convertClientResponseToItems(responseValues, sheetId) {
+    var newArray = [];
 
     //Init data loads this range: 'Form Responses','In Progress','Confirmed'
     var formResponseValues = responseValues[0].values;
     var inProgressValues = responseValues[1].values;
     var confirmedValues = responseValues[2].values;
     //Process Each value range
-    
+
     donorHeaders = responseValues[0].values[0];
 
     for (var i = 1; i < formResponseValues.length; i++) {
-        var newObj = new Item(donorNewItemSheet.id, i, formResponseValues[i], donorSpreadsheetId); 
+        var newObj = new Item(donorNewItemSheet.id, i, formResponseValues[i], donorSpreadsheetId);
         newArray.push(newObj);
     }
 
