@@ -1,0 +1,26 @@
+/*
+Theme Name: WP-Mysterious Child
+Version: 1.0
+Description: A child theme of WP-Mysterious
+Template: wp-mysterious104
+Author: Administrator
+*/
+@import url("../wp-mysterious104/style.css");
+/* Your awesome customization starts here */
+
+
+.page-id-493 #map {
+  float: left;
+  width: 75%;
+  height: 600px;
+}
+
+.page-id-493 #list {
+  height: 600px;
+  width: 25%;
+  background-color: white;
+  margin-left: 50%;
+  color: black;
+  overflow: auto;
+}
+
