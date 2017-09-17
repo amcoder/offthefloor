@@ -173,7 +173,7 @@ function Confirm(item) {
                                          // in this row
     } 
 
-  The response to this call is the item object with the new row id set
+    This function will set the item's rowid to the new id in the sheet
 */
 function moveToInProgress(item) {
     moveItem(item, donorSpreadsheetId, donorNewSheet, donorInProgressSheet);
