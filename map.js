@@ -66,8 +66,8 @@ var donorLastNameIndex = 3;
 var donorEmailIndex = 4;
 var donorPhoneIndex = 5;
 var donorBackupPhoneIndex = 6;
-var donorFurnatureStart = 18;
-var donorFurnatureEnd = 54;
+var donorFurnitureStart = 18;
+var donorFurnitureEnd = 54;
 var donorMustBePickedUpByDateIndex = 16;
 var pickupLocationNotes = 17;
 var donorAdditionalComments = 55
@@ -95,11 +95,11 @@ function Item(type, rowId, rowData, sheet) {
     this.sheet = sheet;
     this.marker = null;
     this.listElement = null;
-    this.whatFurnature = GetFurnatureList(type, rowData);
+    this.whatFurniture = GetFurnitureList(type, rowData);
 }
 
-function GetFurnatureList(type, row) {
-    return "TODO Generate Furnature List";
+function GetFurnitnreList(type, row) {
+    return "TODO Generate Furniture List";
 }
 
 
