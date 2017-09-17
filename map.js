@@ -117,11 +117,11 @@ function GetFurnitureList(type, row) {
 * Initialize OTF Data from spreadsheets
 */
 function initData() {
-    gapi.client.sheets.spreadsheets.values.get({
-        spreadsheetId: '1JNFSq8cxu1euM19om7--48upRRXguR2Hzfxd4I4Q7oc',
-        range: 'In Progress!A1:BE99',
+    gapi.client.sheets.spreadsheets.values.batchGet({
+        spreadsheetId: donorSpreadsheetId,
+        ranges: ['Form Responses','In Progress','Confirmed'],
     }).then(function (response) {
-        var itemListData = convertResponseToItems(response.result.values);
+        var itemListData = convertResponseToItems(response.result.valueRanges, donorSpreadsheetId);
         initMap(itemListData);
         initList(itemListData);
 
@@ -130,16 +130,30 @@ function initData() {
     });
 }
 
-function convertResponseToItems(responseValues) {
+function convertResponseToItems(responseValues, sheetId) {
     var newArray = [];
 
-    for (var i = 1; i < responseValues.length; i++) {
-        var newObj = new Item("InProgress", i, responseValues[i], donorSpreadsheetId); 
 
-        //for (var val = 0; val < responseValues[0].length; val++) {
-        //    newObj[responseValues[0][val]] = responseValues[i][val];
-        //}
+    //Init data loads this range: 'Form Responses','In Progress','Confirmed'
+    var formResponseValues = responseValues[0].values;
+    var inProgressValues = responseValues[1].values;
+    var confirmedValues = responseValues[2].values;
+    //Process Each value range
+    
 
+
+    for (var i = 1; i < formResponseValues.length; i++) {
+        var newObj = new Item(donorNewItemSheet.id, i, formResponseValues[i], donorSpreadsheetId); 
+        newArray.push(newObj);
+    }
+
+    for (var i = 1; i < inProgressValues.length; i++) {
+        var newObj = new Item(donorInProgressSheet.id, i, inProgressValues[i], donorSpreadsheetId);
+        newArray.push(newObj);
+    }
+
+    for (var i = 1; i < confirmedValues.length; i++) {
+        var newObj = new Item(donorConfirmedSheet.id, i, confirmedValues[i], donorSpreadsheetId);
         newArray.push(newObj);
     }
 
@@ -270,8 +284,10 @@ function moveItem(item, spreadsheetId, fromSheet, toSheet) {
 
 function initMap(itemData) {
     console.log('Testing!');
-    for (var i = 1; i < itemData.length; i++) {
-        console.log(itemData[i].address);
+    if (itemData) {
+        for (var i = 1; i < itemData.length; i++) {
+            console.log(itemData[i].address);
+        }
     }
     var uluru = {lat: -25.363, lng: 131.044};
     var map = new google.maps.Map(document.getElementById('map'), {
@@ -300,14 +316,12 @@ function removeMarker(item) {
 
 function initList(itemData) {
     console.log('TODO Generate init List!');
-    for (var i = 1; i < itemData.length; i++) {
-        console.log(itemData[i].name);
-    }
-
 
     for (var i = 1; i < itemData.length; i++) {
         console.log(itemData[i].address);
-        $('#list').html($('#list').html() + itemData[i].name + "<br />")
+        if (itemData[i].type == donorInProgressSheet.id) {
+            $('#list').html($('#list').html() + itemData[i].name + "<br />");
+        }
     }
 }
 
