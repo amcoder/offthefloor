@@ -8,7 +8,7 @@ var DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"
 // included, separated by spaces.
 var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
-// The id of the donor spreadsheet
+// donor spreadsheet settings
 var donorSpreadsheetId = '1JNFSq8cxu1euM19om7--48upRRXguR2Hzfxd4I4Q7oc';
 var donorNewItemSheet = {
   name: 'Form Responses',
@@ -23,9 +23,26 @@ var donorHistorySheet = {
   id: 3
 }
 
+//Indexes where values can be found in the Sept 2017 donor spreadsheet
+var donorAddressIndex = 7;
+var donorCityIndex = 8;
+var donorStateIndex = 9;
+var donorZipIndex = 10;
+var donorFirstNameIndex = 2;
+var donorLastNameIndex = 3;
+var donorEmailIndex = 4;
+var donorPhoneIndex = 5;
+var donorBackupPhoneIndex = 6;
+var donorFurnitureStart = 18;
+var donorFurnitureEnd = 54;
+var donorMustBePickedUpByDateIndex = 16;
+var donorPickupLocationNotes = 17;
+var donorAdditionalComments = 55
+
 /**
 * Initialization and Authentication
 */
+
 /**
  *  On load, called to load the auth2 library and API client library.
  */
@@ -55,22 +72,6 @@ function initClient() {
 /**
  * Data Initialization Section
  */
-
-//Indexes where values can be found in the Sept 2017 donor spreadsheet
-var donorAddressIndex = 7;
-var donorCityIndex = 8;
-var donorStateIndex = 9;
-var donorZipIndex = 10;
-var donorFirstNameIndex = 2;
-var donorLastNameIndex = 3;
-var donorEmailIndex = 4;
-var donorPhoneIndex = 5;
-var donorBackupPhoneIndex = 6;
-var donorFurnitureStart = 18;
-var donorFurnitureEnd = 54;
-var donorMustBePickedUpByDateIndex = 16;
-var pickupLocationNotes = 17;
-var donorAdditionalComments = 55
 
 /**
  * Basic data type for OTF scheduling 
