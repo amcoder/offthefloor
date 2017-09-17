@@ -1,7 +1,14 @@
 // Client ID and API key from the Developer Console
 var CLIENT_ID = '600705290428-u7vknaddutd0kbqrjr88ecsa6jdoutfm.apps.googleusercontent.com';
 
-// The id of the spreadsheet
+// Array of API discovery doc URLs for APIs used by the quickstart
+var DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
+
+// Authorization scopes required by the API; multiple scopes can be
+// included, separated by spaces.
+var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
+
+// The id of the donor spreadsheet
 var donorSpreadsheetId = '1JNFSq8cxu1euM19om7--48upRRXguR2Hzfxd4I4Q7oc';
 var donorNewItemSheet = {
   name: 'Form Responses',
@@ -16,19 +23,15 @@ var donorHistorySheet = {
   id: 3
 }
 
-// Array of API discovery doc URLs for APIs used by the quickstart
-var DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
-
-// Authorization scopes required by the API; multiple scopes can be
-// included, separated by spaces.
-var SCOPES = "https://www.googleapis.com/auth/spreadsheets";
-
+/**
+* Initialization and Authentication
+*/
 /**
  *  On load, called to load the auth2 library and API client library.
  */
 function handleClientLoad() {
-  gapi.load('client:auth2', initClient);
-  // TODO: Load initial data here
+    gapi.load('client:auth2', initClient);
+    // TODO: Load initial data here
 }
 
 /**
@@ -36,72 +39,127 @@ function handleClientLoad() {
  *  listeners.
  */
 function initClient() {
-  gapi.client.init({
-    discoveryDocs: DISCOVERY_DOCS,
-    clientId: CLIENT_ID,
-    scope: SCOPES
-  }).then(function () {
-    // Listen for sign-in state changes.
-    gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+    gapi.client.init({
+        discoveryDocs: DISCOVERY_DOCS,
+        clientId: CLIENT_ID,
+        scope: SCOPES
+    }).then(function () {
+        // Listen for sign-in state changes.
+        gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
 
-    // Handle the initial sign-in state.
-    updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-  });
+        // Handle the initial sign-in state.
+        updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+    });
 }
+
+/**
+ * Data Initialization Section
+ */
+
+//Indexes where values can be found in the Sept 2017 donor spreadsheet
+var donorAddressIndex = 7;
+var donorCityIndex = 8;
+var donorStateIndex = 9;
+var donorZipIndex = 10;
+var donorFirstNameIndex = 2;
+var donorLastNameIndex = 3;
+var donorEmailIndex = 4;
+var donorPhoneIndex = 5;
+var donorBackupPhoneIndex = 6;
+var donorFurnatureStart = 18;
+var donorFurnatureEnd = 54;
+var donorMustBePickedUpByDateIndex = 16;
+var pickupLocationNotes = 17;
+var donorAdditionalComments = 55
+
+/**
+ * Basic data type for OTF scheduling 
+ * @param type - A description of the workflow state of the item
+ * @param rowId -  The google sheet row id. The first row of data in the
+ *                  sheet is rowid 2.
+ * @param rowData: ['value1', 'value2', ...] // The raw values for the data
+                                         // in this row
+ * @param sheet - A reference to the google sheet associated with this item
+ */
+function Item(type, rowId, rowData, sheet) {
+    this.type = type;
+    this.rowId = rowId;
+    this.rowData = rowData;
+    this.name = rowData[donorFirstNameIndex] + ' ' + rowData[donorLastNameIndex];
+    this.phone = rowData[donorPhoneIndex];
+    this.backupPhone = rowData[donorBackupPhoneIndex];
+    this.address = rowData[donorAddressIndex];
+    this.city = rowData[donorCityIndex];
+    this.state = rowData[donorStateIndex];
+    this.zip = rowData[donorZipIndex];
+    this.sheet = sheet;
+    this.marker = null;
+    this.listElement = null;
+    this.whatFurnature = GetFurnatureList(type, rowData);
+}
+
+function GetFurnatureList(type, row) {
+    return "TODO Generate Furnature List";
+}
+
+
+
+/**
+* Initialize OTF Data from spreadsheets
+*/
+function initData() {
+    gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: '1JNFSq8cxu1euM19om7--48upRRXguR2Hzfxd4I4Q7oc',
+        range: 'In Progress!A1:BE99',
+    }).then(function (response) {
+        var itemListData = convertResponseToItems(response.result.values);
+        initMap(itemListData);
+        initList(itemListData);
+
+    }, function (response) {
+        appendPre('Error: ' + response.result.error.message);
+    });
+}
+
+function convertResponseToItems(responseValues) {
+    var newArray = [];
+
+    for (var i = 1; i < responseValues.length; i++) {
+        var newObj = new Item("InProgress", i, responseValues[i], donorSpreadsheetId); 
+
+        //for (var val = 0; val < responseValues[0].length; val++) {
+        //    newObj[responseValues[0][val]] = responseValues[i][val];
+        //}
+
+        newArray.push(newObj);
+    }
+
+    return newArray;
+}
+
 
 /**
  *  Called when the signed in status changes, to update the UI
  *  appropriately. After a sign-in, the API is called.
  */
 function updateSigninStatus(isSignedIn) {
-  if (!isSignedIn) {
-      gapi.auth2.getAuthInstance().signIn();
-  }
+    if (!isSignedIn) {
+        gapi.auth2.getAuthInstance().signIn();
+    }
+    else {
+        initData();
+    }
 }
 
+
+
+
 /**
- *  Move an item from one sheet to another sheet
+ * Workflow Section
  */
-function moveItem(item, spreadsheetId, fromSheet, toSheet) {
-  console.log("moving: ", item.rowid);
-  var request = gapi.client.sheets.spreadsheets.values.append({
-    spreadsheetId: spreadsheetId,
-    range: toSheet.name,
-    valueInputOption: 'RAW',
-    insertDataOption: 'INSERT_ROWS'
-  }, {
-    range: toSheet.name,
-    values: [item.rowdata],
-  });
 
-  request.then(function(response) {
-    console.log("Moved: ", response.result);
-    var updatedRange = response.result.updates.updatedRange;
-    var newrowid = updatedRange.match(/\d+$/)[0];
-    console.log("New row id: ", newrowid);
-
-    console.log("deleting: ", item.rowid);
-    var request = gapi.client.sheets.spreadsheets.batchUpdate({
-      spreadsheetId: spreadsheetId,
-    }, {
-      requests: [{ deleteDimension: {
-        range: {
-          sheetId: fromSheet.id,
-          dimension: 'ROWS',
-          startIndex: item.rowid - 1,
-          endIndex: item.rowid,
-        }
-      }}]
-    });
-    request.then(function(response) {
-      console.log("Deleted: ", response.result);
-      item.rowid = newrowid;
-    }, function(reason) {
-      console.error('error: ' + reason.result.error.message);
-    });
-  }, function(reason) {
-    console.error('error: ' + reason.result.error.message);
-  });
+function Confirm(item) {
+    return "TODO Generate Confirm";
 }
 
 /*
@@ -117,18 +175,105 @@ function moveItem(item, spreadsheetId, fromSheet, toSheet) {
   The response to this call is the item object with the new row id set
 */
 function moveToInProgress(item) {
-  moveItem(item, donorSpreadsheetId, donorNewSheet, donorInProgressSheet);
+    moveItem(item, donorSpreadsheetId, donorNewSheet, donorInProgressSheet);
 }
 
-function initMap() {
-  console.log('Testing!');
-  var uluru = {lat: -25.363, lng: 131.044};
-  var map = new google.maps.Map(document.getElementById('map'), {
+function CancelPickupOrDelivery(item) {
+    return "TODO Generate CancelPickupOrDelivery";
+}
+
+function Complete(item) {
+    return "TODO Generate Complete";
+}
+
+function OrderItem(item, newindex) {
+    return "TODO Generate Complete";
+}
+
+/**
+ *  Move an item from one sheet to another sheet
+ */
+function moveItem(item, spreadsheetId, fromSheet, toSheet) {
+    console.log("moving: ", item.rowid);
+    var request = gapi.client.sheets.spreadsheets.values.append({
+        spreadsheetId: spreadsheetId,
+        range: toSheet.name,
+        valueInputOption: 'RAW',
+        insertDataOption: 'INSERT_ROWS'
+    }, {
+            range: toSheet.name,
+            values: [item.rowdata],
+        });
+
+    request.then(function (response) {
+        console.log("Moved: ", response.result);
+        var updatedRange = response.result.updates.updatedRange;
+        var newrowid = updatedRange.match(/\d+$/)[0];
+        console.log("New row id: ", newrowid);
+
+        console.log("deleting: ", item.rowid);
+        var request = gapi.client.sheets.spreadsheets.batchUpdate({
+            spreadsheetId: spreadsheetId,
+        }, {
+                requests: [{
+                    deleteDimension: {
+                        range: {
+                            sheetId: fromSheet.id,
+                            dimension: 'ROWS',
+                            startIndex: item.rowid - 1,
+                            endIndex: item.rowid,
+                        }
+                    }
+                }]
+            });
+        request.then(function (response) {
+            console.log("Deleted: ", response.result);
+            item.rowid = newrowid;
+        }, function (reason) {
+            console.error('error: ' + reason.result.error.message);
+        });
+    }, function (reason) {
+        console.error('error: ' + reason.result.error.message);
+    });
+}
+
+
+/**
+ * Map Section 
+ * 
+ */
+
+function initMap(itemData) {
+    console.log('Testing!');
+    for (var i = 1; i < itemData.length; i++) {
+        console.log(itemData[i].address);
+    }
+    var uluru = {lat: -25.363, lng: 131.044};
+    var map = new google.maps.Map(document.getElementById('map'), {
     zoom: 4,
     center: uluru
-  });
-  var marker = new google.maps.Marker({
+    });
+    var marker = new google.maps.Marker({
     position: uluru,
     map: map
-  });
+    });
+}
+
+
+/**
+ * List Section 
+ * 
+ */
+
+function initList(itemData) {
+    console.log('TODO Generate init List!');
+    for (var i = 1; i < itemData.length; i++) {
+        console.log(itemData[i].name);
+    }
+
+
+    for (var i = 1; i < itemData.length; i++) {
+        console.log(itemData[i].address);
+        $('#list').html($('#list').html() + itemData[i].name + "<br />")
+    }
 }
