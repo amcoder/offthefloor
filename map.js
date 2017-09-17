@@ -6,7 +6,7 @@ var DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"
 
 // Authorization scopes required by the API; multiple scopes can be
 // included, separated by spaces.
-var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
+var SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 
 // client spreadsheet settings
 var clientSpreadsheetId = '14AFKDSVe2Xz3PpARKDC5xIHE4zVyNXmN81_m4Fdhks8';
@@ -49,6 +49,8 @@ var donorFurnitureEnd = 54;
 var donorMustBePickedUpByDateIndex = 16;
 var donorPickupLocationNotes = 17;
 var donorAdditionalComments = 55
+var donorLatitudeIndex = 57;
+var donorLongitudeIndex = 58;
 
 var clientName = 8;
 
@@ -133,7 +135,7 @@ function updateSigninStatus(isSignedIn) {
                                          // in this row
  * @param sheet - A reference to the google sheet associated with this item
  */
-function Item(type, status, rowId, rowData, sheet) {
+function Item(type, status, rowId, rowData, spreadsheet, sheet) {
     this.type = type;
     this.status = status;
     this.rowId = rowId;
@@ -145,13 +147,16 @@ function Item(type, status, rowId, rowData, sheet) {
     this.city = rowData[donorCityIndex];
     this.state = rowData[donorStateIndex];
     this.zip = rowData[donorZipIndex];
+    this.latitude = rowData[donorLatitudeIndex];
+    this.longitude = rowData[donorLongitudeIndex];
     this.sheet = sheet;
+    this.spreadsheet = spreadsheet;
     this.marker = null;
     this.listElement = null;
     this.whatFurniture = GetFurnitureList(type, rowData);
 }
 
-function ClientItem(type, status, rowId, rowData, sheet) {
+function ClientItem(type, status, rowId, rowData, spreadsheet, sheet) {
     this.type = type;
     this.status = status;
     this.rowId = rowId;
@@ -164,6 +169,7 @@ function ClientItem(type, status, rowId, rowData, sheet) {
     this.state = "PA";
     this.zip = rowData[clientZipIndex];
     this.sheet = sheet;
+    this.spreadsheet = spreadsheet;
     this.marker = null;
     this.listElement = null;
     this.whatFurniture = rowData[clientFurnitureDescription];
@@ -193,7 +199,7 @@ function initData() {
             ranges: ['Form Responses 1', 'In Progress'],
         }).then(function (clientResponse) {
             convertClientResponseToItems(clientResponse.result.valueRanges, clientSpreadsheetId);
-            initMap(allData);
+            initMapData(allData);
             initList(allData);
         }, function (clientResponse) {
             alert('Error: ' + clientResponse.result.error.message);
@@ -215,21 +221,19 @@ function convertDonorResponseToItems(responseValues, sheetId) {
     donorHeaders = formResponseValues[0];
 
     for (var i = 1; i < formResponseValues.length; i++) {
-        var newObj = new Item(donorType, notConfirmedStatus, formResponseValues[i], donorSpreadsheetId); 
+        var newObj = new Item(donorType, notConfirmedStatus, i, formResponseValues[i], donorSpreadsheetId, "Form Responses"); 
         allData.push(newObj);
     }
 
     for (var i = 1; i < inProgressValues.length; i++) {
-        var newObj = new Item(donorType, inProgressStatus, i, inProgressValues[i], donorSpreadsheetId);
+        var newObj = new Item(donorType, inProgressStatus, i, inProgressValues[i], donorSpreadsheetId, "In Progress");
         allData.push(newObj);
     }
 
-    for (var i = 1; i < inProgressValues.length; i++) {
-        var newObj = new Item(donorType, confirmedStatus, i, inProgressValues[i], donorSpreadsheetId);
+    for (var i = 1; i < confirmedValues.length; i++) {
+        var newObj = new Item(donorType, confirmedStatus, i, confirmedValues[i], donorSpreadsheetId, "Confirmed");
         allData.push(newObj);
     }
-
-
 }
 
 function convertClientResponseToItems(responseValues, sheetId) {
@@ -243,19 +247,15 @@ function convertClientResponseToItems(responseValues, sheetId) {
     donorHeaders = responseValues[0].values[0];
 
     for (var i = 1; i < formResponseValues.length; i++) {
-        var newObj = new ClientItem(clientType, notConfirmedStatus, i, formResponseValues[i], clientSpreadsheetId); 
+        var newObj = new ClientItem(clientType, notConfirmedStatus, i, formResponseValues[i], clientSpreadsheetId, "Form Responses 1"); 
         allData.push(newObj);
     }
 
     for (var i = 1; i < inProgressValues.length; i++) {
-        var newObj = new ClientItem(clientType, inProgressStatus, i, inProgressValues[i], clientSpreadsheetId);
+        var newObj = new ClientItem(clientType, inProgressStatus, i, inProgressValues[i], clientSpreadsheetId, "In Progress");
         allData.push(newObj);
     }
 }
-
-
-
-
 
 /**
  * Workflow Section
@@ -313,6 +313,27 @@ function orderItemOnSheet(item, newindex) {
     console.log("TODO: Write the orderItemOnSheet function");
 }
 
+function saveLocation(item) {
+
+  var range = item.sheet + '!BF' + item.rowId + ':BG' + item.rowId + 1;
+  console.log("Saving to ", range);
+  var request = gapi.client.sheets.spreadsheets.values.update({
+    spreadsheetId: item.spreadsheet,
+    range: range,
+    valueInputOption: "RAW"
+  }, {
+    range: range,
+    values: [[item.latitude, item.longitude]]
+  });
+
+  request.then(function(response) {
+    console.log("Saved location: ", response);
+  }, function(reason) {
+    console.error('error: ' + reason.result.error.message);
+  });
+}
+
+
 /**
  *  Move an item from one sheet to another sheet
  */
@@ -324,9 +345,9 @@ function moveItem(item, spreadsheetId, fromSheet, toSheet) {
         valueInputOption: 'RAW',
         insertDataOption: 'INSERT_ROWS'
     }, {
-            range: toSheet.name,
-            values: [item.rowdata],
-        });
+        range: toSheet.name,
+        values: [item.rowdata],
+    });
 
     request.then(function (response) {
         console.log("Moved: ", response.result);
@@ -376,11 +397,13 @@ function initMap() {
 }
 
 function initMapData(items) {
-    for (var i = 1; i < items.length; i++) {
-
-        geocode(items[i]);
-        //infowindow(items[i])
+  for (var i = 1; i < items.length; i++) {
+    if(items[i].latitude && items[i].longitude) {
+      addMarker(items[i]);
+    } else {
+      geocode(items[i]);
     }
+  }
 }
 
 function updateMarker(item) {
@@ -397,20 +420,29 @@ function geocode(item) {
   var geocoder = new google.maps.Geocoder();
   var address = item.address + " " + item.city + ", " + item.state + " " + item.zip;
 
+  //console.log("Geocoding ", address);
   geocoder.geocode({ 'address': address }, function(results, status) {
     if (status == google.maps.GeocoderStatus.OK){
       console.log("Geocoded ", item);
       var addressLocation = results[0].geometry.location;
-      var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2%7C' + pincolor(item));
-      item.marker = new google.maps.Marker({
-        position: addressLocation,
-        map: map,
-        animation: google.maps.Animation.DROP,
-        icon:pinImage
-    });
+      item.latitude = addressLocation.lat();
+      item.longitude = addressLocation.lng();
+      addMarker(item);
+      saveLocation(item);
     } else {
-      console.log("Failed to geocode ", item);
+      console.log("Failed to geocode ", item, " results: ", results, " status: ", status);
     }
+  });
+}
+
+function addMarker(item) {
+  var position = { lat: item.latitude, lng: item.longitude };
+  var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2%7C' + pincolor(item));
+  item.marker = new google.maps.Marker({
+    position: position,
+    map: map,
+    animation: google.maps.Animation.DROP,
+    icon:pinImage
   });
 }
 
