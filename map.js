@@ -326,7 +326,7 @@ function initList(itemData) {
     for (var i = 1; i < itemData.length; i++) {
         console.log(itemData[i].address);
         if (itemData[i].type == donorInProgressSheet.id) {
-            $('#list').html($('#list').html() + itemData[i].name + "<br />");
+            $('#list').html($('#list').html() + itemData[i].name + " " + itemData[i].whatFurniture + "<br /><br />");
         }
     }
 }
