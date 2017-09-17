@@ -52,6 +52,16 @@ var donorAdditionalComments = 55
 
 var donorHeaders = [];
 
+var clientPinColor = 'fff838';
+var donorConfirmedPinColor = '46f91d';
+var donorNotConfirmedPinColor = 'f91b1b';
+
+var donorType = "DONOR";
+var clientType = "CLIENT";
+var notConfirmedStatus = "NotConfirmed";
+var confirmedStatus = "Confirmed";
+var inProgressStatus = "InProgress";
+
 var allData = [];
 
 /**
@@ -85,6 +95,19 @@ function initClient() {
 }
 
 /**
+ *  Called when the signed in status changes, to update the UI
+ *  appropriately. After a sign-in, the API is called.
+ */
+function updateSigninStatus(isSignedIn) {
+    if (!isSignedIn) {
+        gapi.auth2.getAuthInstance().signIn();
+    }
+    else {
+        initData();
+    }
+}
+
+/**
  * Data Initialization Section
  */
 
@@ -97,8 +120,9 @@ function initClient() {
                                          // in this row
  * @param sheet - A reference to the google sheet associated with this item
  */
-function Item(type, rowId, rowData, sheet) {
+function Item(type, status, rowId, rowData, sheet) {
     this.type = type;
+    this.status = status;
     this.rowId = rowId;
     this.rowData = rowData;
     this.name = rowData[donorFirstNameIndex] + ' ' + rowData[donorLastNameIndex];
@@ -181,36 +205,23 @@ function convertClientResponseToItems(responseValues, sheetId) {
     donorHeaders = responseValues[0].values[0];
 
     for (var i = 1; i < formResponseValues.length; i++) {
-        var newObj = new Item(donorNewItemSheet.id, i, formResponseValues[i], donorSpreadsheetId);
+        var newObj = new Item(donorType, notConfirmedStatus, i, formResponseValues[i], donorSpreadsheetId); 
         newArray.push(newObj);
     }
 
     for (var i = 1; i < inProgressValues.length; i++) {
-        var newObj = new Item(donorInProgressSheet.id, i, inProgressValues[i], donorSpreadsheetId);
+        var newObj = new Item(donorType, inProgressStatus, i, inProgressValues[i], donorSpreadsheetId);
         newArray.push(newObj);
     }
 
     for (var i = 1; i < confirmedValues.length; i++) {
-        var newObj = new Item(donorConfirmedSheet.id, i, confirmedValues[i], donorSpreadsheetId);
+        var newObj = new Item(donorType, confirmedStatus, i, confirmedValues[i], donorSpreadsheetId);
         newArray.push(newObj);
     }
 
     return newArray;
 }
 
-
-/**
- *  Called when the signed in status changes, to update the UI
- *  appropriately. After a sign-in, the API is called.
- */
-function updateSigninStatus(isSignedIn) {
-    if (!isSignedIn) {
-        gapi.auth2.getAuthInstance().signIn();
-    }
-    else {
-        initData();
-    }
-}
 
 
 
@@ -319,23 +330,22 @@ function moveItem(item, spreadsheetId, fromSheet, toSheet) {
  * Map Section 
  * 
  */
+var map;
 
-function initMap(itemData) {
-    console.log('Testing!');
-    if (itemData) {
-        for (var i = 1; i < itemData.length; i++) {
-            console.log(itemData[i].address);
-        }
+function initMap() {
+    var pittsburgh = {lat: 40.45, lng:-79.99};
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: pittsburgh,
+      zoom: 10
+    });
+}
+
+function initMapData(items) {
+    for (var i = 1; i < items.length; i++) {
+
+        geocode(items[i]);
+        //infowindow(items[i])
     }
-    var uluru = {lat: -25.363, lng: 131.044};
-    var map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 4,
-    center: uluru
-    });
-    var marker = new google.maps.Marker({
-    position: uluru,
-    map: map
-    });
 }
 
 function updateMarker(item) {
@@ -347,6 +357,40 @@ function updateInfoWindow(item) {
 function removeMarker(item) {
 }
 
+//turns address string to lat and long to place marker on map
+function geocode(item) {
+  var geocoder = new google.maps.Geocoder();
+  var address = item.address + " " + item.city + ", " + item.state + " " + item.zip;
+
+  geocoder.geocode({ 'address': address }, function(results, status) {
+    if (status == google.maps.GeocoderStatus.OK){
+      console.log("Geocoded ", item);
+      var addressLocation = results[0].geometry.location;
+      var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2%7C' + pincolor(item));
+      item.marker = new google.maps.Marker({
+        position: addressLocation,
+        map: map,
+        animation: google.maps.Animation.DROP,
+        icon:pinImage
+    });
+    } else {
+      console.log("Failed to geocode ", item);
+    }
+  });
+}
+
+function pincolor(item) {
+  if(item.type == donorType) {
+    if(item.status == notConfirmedStatus) {
+      return donorNotConfirmedPinColor;
+    } else {
+      return donorConfirmedPinColor;
+    }
+  } else {
+    return clientPinColor;
+  }
+}
+
 /**
  * List Section 
  * 
@@ -356,7 +400,6 @@ function initList(itemData) {
     console.log('TODO Generate init List!');
 
     for (var i = 1; i < itemData.length; i++) {
-        console.log(itemData[i].address);
         if (itemData[i].type == donorInProgressSheet.id) {
             $('#list').html($('#list').html() + itemData[i].name + " " + itemData[i].whatFurniture + "<br /><br />");
         }
