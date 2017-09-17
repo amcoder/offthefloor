@@ -98,7 +98,7 @@ function Item(type, rowId, rowData, sheet) {
     this.whatFurniture = GetFurnitureList(type, rowData);
 }
 
-function GetFurnitnreList(type, row) {
+function GetFurnitureList(type, row) {
     return "TODO Generate Furniture List";
 }
 
