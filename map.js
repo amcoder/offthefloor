@@ -11,16 +11,24 @@ var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 // donor spreadsheet settings
 var donorSpreadsheetId = '1JNFSq8cxu1euM19om7--48upRRXguR2Hzfxd4I4Q7oc';
 var donorNewItemSheet = {
-  name: 'Form Responses',
-  id: 0
+    name: 'Form Responses',
+    id: 0
 }
 var donorInProgressSheet = {
-  name: 'In Progress',
-  id: 2
+    name: 'In Progress',
+    id: 2
 }
 var donorHistorySheet = {
-  name: 'History',
-  id: 3
+    name: 'History',
+    id: 3
+}
+var donorConfirmedSheet = {
+    name: 'Confirmed',
+    id: 4
+}
+var donorCancelledSheet = {
+    name: 'Cancelled',
+    id: 5
 }
 
 //Indexes where values can be found in the Sept 2017 donor spreadsheet
