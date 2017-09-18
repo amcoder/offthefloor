@@ -273,13 +273,17 @@ function InProgress(item) {
     addToList(item);
 }
 
-function CancelPickupOrDelivery(item) {
+function CancelPickupOrDelivery(i) {
+	item = allData[i];
+	
     moveToConfirmSheet(item);
     updateInfoWindow(item);
     removeFromList(item);
 }
 
-function Complete(item) {
+function Complete(i) {
+	item = allData[i];
+	
     moveToCompleteSheet(item);
     removeMarker(item);
     removeFromList(item);
@@ -422,21 +426,6 @@ function pincolor(item) {
   }
 }
 
-/**
- * List Section 
- * 
- */
-
-//function initList(itemData) {
-//    console.log('TODO Generate init List!');
-
-//    for (var i = 1; i < itemData.length; i++) {
-//        if (itemData[i].status == inProgressStatus) {
-//            $('#list').html($('#list').html() + "Name: " + itemData[i].name + " " + itemData[i].whatFurniture + "<br /><br />");
-//        }
-//    }
-//}
-
 function initList(itemData) {
     var htmlStr = '';
     var temp = 0;
@@ -472,10 +461,10 @@ function initList(itemData) {
                 '</div>' +
                 '<div class="results">' +
                 '<div class="title">What </div>' +
-                '<div class="content">' + row.whatFurniture + '</div>' +
+                '<div class="content">' + ((row.whatFurniture.length > 32) ? row.whatFurniture.substring(0, 32) : row.whatFurniture) + '</div>' +
                 '</div>' +
-                '<div class="btns"><a class="x" href="#">x</a></div>' +
-                '<div class="btns"><a class="done" href="#">Completed</a></div>' +
+                '<div class="btns"><a class="x" onclick="CancelPickupOrDelivery(' + i +');">x</a></div>' +
+                '<div class="btns"><a class="done" onclick="Complete(' + i + ');">Completed</a></div>' +
                 '<div class="clear"> </div>' +
                 '</div>';
         }

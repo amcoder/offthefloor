@@ -1,36 +1,9 @@
-/*
-Theme Name: WP-Mysterious Child
-Version: 1.0
-Description: A child theme of WP-Mysterious
-Template: wp-mysterious104
-Author: Administrator
-*/
 @charset "UTF-8";
 /* CSS Document */
-
-@import url("../wp-mysterious104/style.css");
-/* Your awesome customization starts here */
-
-
-.page-id-493 #map {
-  float: left;
-  width: 75%;
-  height: 600px;
-}
-
-.page-id-493 #list {
-  height: 600px;
-  width: 25%;
-  background-color: white;
-  margin-left: 50%;
-  color: black;
-  overflow: auto;
-}
 
 #wrapper{
 	position: relative;
 	max-width: 650px;
-	top: 600;
 }
 
 .clear{
@@ -49,10 +22,8 @@ Author: Administrator
 	font-family: Gotham, "Helvetica Neue", Helvetica, Arial, "sans-serif";
 	font-size: 14px;
 	float: left;
-	top: -590;
-	position: relative;
-	width: 480px;
-}
+	max-width: 320px;
+	}
 
 #wrapper .results .content, #wrapper .results .title{
 	float: left;
@@ -72,13 +43,12 @@ Author: Administrator
 	height: 40px;
 	font-family: Gotham, "Helvetica Neue", Helvetica, Arial, "sans-serif";
 	display: block;
-	top: -590;
-	position: relative;
+
 }
 .section, .section2{
 	padding:20px 0 5px 0;
-	height: 119px;
-	min-width: 480px;
+	height: 140px;
+	min-width: 600px;
 }
 .section2{
 	background: #ececec;
