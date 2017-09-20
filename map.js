@@ -436,7 +436,7 @@ function geocode(item) {
 }
 
 function addMarker(item) {
-  var position = { lat: item.latitude, lng: item.longitude };
+  var position = { lat: parseFloat(item.latitude), lng: parseFloat(item.longitude) };
   var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2%7C' + pincolor(item));
   item.marker = new google.maps.Marker({
     position: position,
