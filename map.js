@@ -179,6 +179,8 @@ function ClientItem(type, status, rowId, rowData, spreadsheet, sheet) {
     this.city = ""; //Not on form
     this.state = "PA";
     this.zip = rowData[clientZipIndex];
+    this.latitude = rowData[donorLatitudeIndex];
+    this.longitude = rowData[donorLongitudeIndex];
     this.sheet = sheet;
     this.spreadsheet = spreadsheet;
     this.marker = null;
