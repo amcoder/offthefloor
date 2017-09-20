@@ -535,11 +535,9 @@ function initList(itemData) {
         console.log(itemData[i].address);
         if (itemData[i].status == inProgressStatus) {
             var row = itemData[i];
-            temp = temp + 1;
-            var strTemp = ((temp % 2 == 0) ? '2' : '');
 
             htmlStr +=
-                '<div class="section' + strTemp + '">' +
+                '<div class="section">' +
                 '<div class="results">' +
                 '<div class="title">Name </div>' +
                 '<div class="content">' + row.name + '</div>' +

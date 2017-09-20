@@ -75,12 +75,12 @@ Author: Administrator
 	top: -590;
 	position: relative;
 }
-.section, .section2{
+.section {
 	padding:20px 0 5px 0;
 	height: 119px;
 	min-width: 480px;
 }
-.section2{
+.section:nth-child(even) {
 	background: #ececec;
 }
 #wrapper .x {
