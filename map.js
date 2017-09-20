@@ -474,11 +474,9 @@ function updateMarker(item) {
 }
 
 function showInfoWindow(item) {
-  var contentString = '<div id="content">'+
-                      '<div id="siteNotice">'+
-                      '</div>'+
-                      '<h2 id="firstHeading" class="firstHeading">' + item.name + '</h2>' +
-                      '<div id="bodyContent">'+
+  var contentString = '<div class="infoWindow">'+
+                      '<h2>' + item.name + '</h2>' +
+                      '<div>'+
                       '<p><b>Address: </b>'+ item.address + " " + item.city + ", " + item.state + " " + item.zip + '</p>' +
                       '<p><b>Phone: </b>'+ item.phone + '</p>' +
                       '<p><b>Phone: </b>'+ item.backupPhone + '</p>' +
@@ -502,9 +500,11 @@ function showInfoWindow(item) {
   var content = $(contentString);
   content.on("click", ".confirmLink", function() {
     Confirm(item);
+    return false;
   });
   content.on("click", ".inProgressLink", function() {
     InProgress(item);
+    return false;
   });
 
   activeInfoWindow.setContent(content[0]);
