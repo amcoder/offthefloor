@@ -574,8 +574,12 @@ function addToList(item) {
     Complete(item);
   });
 
+  item.listElement = $row;
+
   $('#wrapper').append($row);
 }
 
 function removeFromList(item) {
+  item.listElement.remove();
+  item.listElement = null;
 }
