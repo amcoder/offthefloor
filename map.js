@@ -66,11 +66,10 @@ var donorLongitudeIndex = 58;
 
 var clientName = 8;
 
-var clientAddressNumberIndex = 12;
-var clientAddressNameIndex = 13;
-var clientCityIndex = 8;
-var clientStateIndex = 9;
-var clientZipIndex = 14; //none
+var clientAddressNumberIndex = 14;
+var clientAddressNameIndex = 15;
+var clientCityIndex = 16;
+var clientZipIndex = 17; //none
 var clientEmailIndex = 13;
 var clientPhoneIndex = 9;
 var clientBackupPhoneIndex = 11;
