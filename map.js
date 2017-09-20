@@ -276,13 +276,14 @@ function convertClientResponseToItems(responseValues, sheetId) {
 
 function Confirm(item) {
     moveToConfirmSheet(item);
+    item.status = confirmedStatus;
     updateMarker(item);
-    updateInfoWindow(item);
 }
 
 function InProgress(item) {
     moveToInProgressSheet(item);
-    updateInfoWindow(item);
+    item.status = inProgressStatus;
+    updateMarker(item);
     addToList(item);
 }
 
@@ -311,11 +312,19 @@ function OrderItem(item, newindex) {
  *
  */
 function moveToInProgressSheet(item) {
-    moveItem(item, donorSpreadsheetId, donorNewSheet, donorInProgressSheet);
+  if(item.type === donorType) {
+    moveItem(item, donorInProgressSheet);
+  } else {
+    moveItem(item, clientInProgressSheet);
+  }
 }
 
 function moveToConfirmSheet(item) {
-    moveItem(item, donorSpreadsheetId, donorNewSheet, donorInProgressSheet);
+  if(item.type === donorType) {
+    moveItem(item, donorConfirmedSheet);
+  } else {
+    moveItem(item, clientNewItemSheet);
+  }
 }
 
 function moveToCompleteSheet(item) {
@@ -420,12 +429,6 @@ function initMapData(items) {
   }
 }
 
-function updateMarker(item) {
-}
-
-function updateInfoWindow(item) {
-}
-
 function removeMarker(item) {
 }
 
@@ -453,18 +456,24 @@ var activeInfoWindow;
 
 function addMarker(item) {
   var position = { lat: parseFloat(item.latitude), lng: parseFloat(item.longitude) };
-  var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2%7C' + pincolor(item));
   item.marker = new google.maps.Marker({
     position: position,
     map: map,
     animation: google.maps.Animation.DROP,
-    icon:pinImage
+    icon: mapIcon(item)
   });
 
   //when user clicks the marker, the info window w/ content will open
   item.marker.addListener('click', function() {
     showInfoWindow(item);
   });
+}
+
+function updateMarker(item) {
+  item.marker.setIcon(mapIcon(item));
+  if(activeInfoWindow && activeInfoWindow.item === item) {
+    showInfoWindow(item);
+  }
 }
 
 function showInfoWindow(item) {
@@ -495,14 +504,19 @@ function showInfoWindow(item) {
   
   var content = $(contentString);
   content.on("click", ".confirmLink", function() {
-    console.log("confirming ", item);
+    Confirm(item);
   });
   content.on("click", ".inProgressLink", function() {
-    console.log("in progress ", item);
+    InProgress(item);
   });
 
   activeInfoWindow.setContent(content[0]);
+  activeInfoWindow.item = item;
   activeInfoWindow.open(map, item.marker);
+}
+
+function mapIcon(item) {
+  return new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2%7C' + pincolor(item));
 }
 
 function pincolor(item) {
