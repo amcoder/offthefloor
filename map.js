@@ -423,6 +423,7 @@ function initMapData(items) {
 }
 
 function removeMarker(item) {
+  item.marker.setMap(null);
 }
 
 //turns address string to lat and long to place marker on map
