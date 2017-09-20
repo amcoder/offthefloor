@@ -435,6 +435,8 @@ function geocode(item) {
   });
 }
 
+var activeInfoWindow;
+
 function addMarker(item) {
   var position = { lat: parseFloat(item.latitude), lng: parseFloat(item.longitude) };
   var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2%7C' + pincolor(item));
@@ -444,6 +446,49 @@ function addMarker(item) {
     animation: google.maps.Animation.DROP,
     icon:pinImage
   });
+
+  //when user clicks the marker, the info window w/ content will open
+  item.marker.addListener('click', function() {
+    showInfoWindow(item);
+  });
+}
+
+function showInfoWindow(item) {
+  var contentString = '<div id="content">'+
+                      '<div id="siteNotice">'+
+                      '</div>'+
+                      '<h2 id="firstHeading" class="firstHeading">' + item.name + '</h2>' +
+                      '<div id="bodyContent">'+
+                      '<p><b>Address: </b>'+ item.address + " " + item.city + ", " + item.state + " " + item.zip + '</p>' +
+                      '<p><b>Phone: </b>'+ item.phone + '</p>' +
+                      '<p><b>Phone: </b>'+ item.backupPhone + '</p>' +
+                      '<p><b>Furniture: </b>'+ item.whatFurniture + '</p>' +
+                      '<p>';
+
+  if(item.type === donorType && item.status === notConfirmedStatus) {
+    contentString = contentString + '<a class="confirmLink" href="#">Confirm</a>  ';
+  }
+
+  if(item.status !== inProgressStatus) {
+    contentString = contentString + '<a class="inProgressLink" href="#">In Progress</a>';
+  }
+
+  contentString = contentString + '</p></div></div>';
+
+  if(!activeInfoWindow) {
+    activeInfoWindow = new google.maps.InfoWindow();
+  }
+  
+  var content = $(contentString);
+  content.on("click", ".confirmLink", function() {
+    console.log("confirming ", item);
+  });
+  content.on("click", ".inProgressLink", function() {
+    console.log("in progress ", item);
+  });
+
+  activeInfoWindow.setContent(content[0]);
+  activeInfoWindow.open(map, item.marker);
 }
 
 function pincolor(item) {
