@@ -234,17 +234,17 @@ function convertDonorResponseToItems(responseValues, sheetId) {
     donorHeaders = formResponseValues[0];
 
     for (var i = 1; i < formResponseValues.length; i++) {
-        var newObj = new Item(donorType, notConfirmedStatus, i + 1, formResponseValues[i], donorSpreadsheetId, "Form Responses"); 
+        var newObj = new Item(donorType, notConfirmedStatus, i + 1, formResponseValues[i], donorSpreadsheetId, donorNewItemSheet); 
         allData.push(newObj);
     }
 
     for (var i = 1; i < inProgressValues.length; i++) {
-        var newObj = new Item(donorType, inProgressStatus, i + 1, inProgressValues[i], donorSpreadsheetId, "In Progress");
+        var newObj = new Item(donorType, inProgressStatus, i + 1, inProgressValues[i], donorSpreadsheetId, donorInProgressSheet);
         allData.push(newObj);
     }
 
     for (var i = 1; i < confirmedValues.length; i++) {
-        var newObj = new Item(donorType, confirmedStatus, i + 1, confirmedValues[i], donorSpreadsheetId, "Confirmed");
+        var newObj = new Item(donorType, confirmedStatus, i + 1, confirmedValues[i], donorSpreadsheetId, donorConfirmedSheet);
         allData.push(newObj);
     }
 }
@@ -260,12 +260,12 @@ function convertClientResponseToItems(responseValues, sheetId) {
     donorHeaders = responseValues[0].values[0];
 
     for (var i = 1; i < formResponseValues.length; i++) {
-        var newObj = new ClientItem(clientType, notConfirmedStatus, i + 1, formResponseValues[i], clientSpreadsheetId, "Form Responses 1"); 
+        var newObj = new ClientItem(clientType, notConfirmedStatus, i + 1, formResponseValues[i], clientSpreadsheetId, clientNewItemSheet); 
         allData.push(newObj);
     }
 
     for (var i = 1; i < inProgressValues.length; i++) {
-        var newObj = new ClientItem(clientType, inProgressStatus, i + 1, inProgressValues[i], clientSpreadsheetId, "In Progress");
+        var newObj = new ClientItem(clientType, inProgressStatus, i + 1, inProgressValues[i], clientSpreadsheetId, clientInProgressSheet);
         allData.push(newObj);
     }
 }
@@ -328,7 +328,7 @@ function orderItemOnSheet(item, newindex) {
 
 function saveLocation(item) {
 
-  var range = item.sheet + '!BF' + item.rowId + ':BG' + item.rowId;
+  var range = item.sheet.name + '!BF' + item.rowId + ':BG' + item.rowId;
   console.log("Saving to ", range);
   var request = gapi.client.sheets.spreadsheets.values.update({
     spreadsheetId: item.spreadsheet,
@@ -350,16 +350,16 @@ function saveLocation(item) {
 /**
  *  Move an item from one sheet to another sheet
  */
-function moveItem(item, spreadsheetId, fromSheet, toSheet) {
-    console.log("moving: ", item.rowid);
+function moveItem(item, toSheet) {
+    console.log("moving: ", item.rowId);
     var request = gapi.client.sheets.spreadsheets.values.append({
-        spreadsheetId: spreadsheetId,
-        range: toSheet.name,
+        spreadsheetId: item.spreadsheet,
+        range: toSheet.name + "!A1",
         valueInputOption: 'RAW',
         insertDataOption: 'INSERT_ROWS'
     }, {
-        range: toSheet.name,
-        values: [item.rowdata],
+        range: toSheet.name + "!A1",
+        values: [item.rowData],
     });
 
     request.then(function (response) {
@@ -368,24 +368,25 @@ function moveItem(item, spreadsheetId, fromSheet, toSheet) {
         var newrowid = updatedRange.match(/\d+$/)[0];
         console.log("New row id: ", newrowid);
 
-        console.log("deleting: ", item.rowid);
+        console.log("deleting: ", item.rowId);
         var request = gapi.client.sheets.spreadsheets.batchUpdate({
-            spreadsheetId: spreadsheetId,
+            spreadsheetId: item.spreadsheet,
         }, {
                 requests: [{
                     deleteDimension: {
                         range: {
-                            sheetId: fromSheet.id,
+                            sheetId: item.sheet.id,
                             dimension: 'ROWS',
-                            startIndex: item.rowid - 1,
-                            endIndex: item.rowid,
+                            startIndex: item.rowId - 1,
+                            endIndex: item.rowId,
                         }
                     }
                 }]
             });
         request.then(function (response) {
             console.log("Deleted: ", response.result);
-            item.rowid = newrowid;
+            item.rowId = newrowid;
+            item.sheet = toSheet;
         }, function (reason) {
             console.error('error: ' + reason.result.error.message);
         });
