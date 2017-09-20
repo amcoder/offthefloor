@@ -19,19 +19,19 @@ var donorNewItemSheet = {
 }
 var donorInProgressSheet = {
     name: 'In Progress',
-    id: 2
+    id: 1204826648
 }
 var donorHistorySheet = {
     name: 'History',
-    id: 3
+    id: 934365183
 }
 var donorConfirmedSheet = {
     name: 'Confirmed',
-    id: 4
+    id: 336531706
 }
 var donorCancelledSheet = {
     name: 'Cancelled',
-    id: 5
+    id: 440282832
 }
 
 //Indexes where values can be found in the Sept 2017 donor spreadsheet
