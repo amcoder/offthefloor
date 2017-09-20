@@ -303,10 +303,6 @@ function Complete(i) {
     removeFromList(item);
 }
 
-function OrderItem(item, newindex) {
-    orderItemOnSheet(item, newindex);
-}
-
 /**
  * Sheet Management Section
  *
@@ -328,11 +324,11 @@ function moveToConfirmSheet(item) {
 }
 
 function moveToCompleteSheet(item) {
-    moveItem(item, donorSpreadsheetId, donorNewSheet, donorInProgressSheet);
-}
-
-function orderItemOnSheet(item, newindex) {
-    console.log("TODO: Write the orderItemOnSheet function");
+  if(item.type === donorType) {
+    moveItem(item, donorHistorySheet);
+  } else {
+    moveItem(item, clientHistorySheet);
+  }
 }
 
 function saveLocation(item) {
