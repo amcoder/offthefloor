@@ -83,7 +83,7 @@ Author: Administrator
 .section:nth-child(even) {
 	background: #ececec;
 }
-#wrapper .x {
+#wrapper .cancelLink {
 	padding:5px 10px 5px 10px;
 	background: #444444;
 	color:#ffffff;
@@ -91,7 +91,7 @@ Author: Administrator
 	text-decoration: none;
 
 }
-#wrapper .done{
+#wrapper .completeLink {
 	padding:5px 10px 5px 10px;
 	background: #d85910;
 	color:#ffffff;

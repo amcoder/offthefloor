@@ -287,17 +287,14 @@ function InProgress(item) {
     addToList(item);
 }
 
-function CancelPickupOrDelivery(i) {
-	item = allData[i];
-	
+function CancelPickupOrDelivery(item) {
     moveToConfirmSheet(item);
-    updateInfoWindow(item);
+    item.status = confirmedStatus;
+    updateMarker(item);
     removeFromList(item);
 }
 
-function Complete(i) {
-	item = allData[i];
-	
+function Complete(item) {
     moveToCompleteSheet(item);
     removeMarker(item);
     removeFromList(item);
@@ -528,51 +525,55 @@ function pincolor(item) {
 }
 
 function initList(itemData) {
-    var htmlStr = '';
-    var temp = 0;
-
     for (var i = 1; i < itemData.length; i++) {
         console.log(itemData[i].address);
         if (itemData[i].status == inProgressStatus) {
-            var row = itemData[i];
-
-            htmlStr +=
-                '<div class="section">' +
-                '<div class="results">' +
-                '<div class="title">Name </div>' +
-                '<div class="content">' + row.name + '</div>' +
-                '</div>' +
-                '<div class="results">' +
-                '<div class="title">Phone </div>' +
-                '<div class="content">' + row.phone + '</div>' +
-                '</div>' +
-                '<div class="results">' +
-                '<div class="title">Alt Phone </div>' +
-                '<div class="content">' + row.backupPhone + '</div>' +
-                '</div>' +
-                '<div class="results">' +
-                '<div class="title">Address </div>' +
-                '<div class="content">' + row.address + '</div>' +
-                '</div>' +
-                '<div class="results">' +
-                '<div class="title">City, State, Zip </div>' +
-                '<div class="content">' + row.city + ', ' + row.state + ' ' + row.zip + '</div>' +
-                '</div>' +
-                '<div class="results">' +
-                '<div class="title">What </div>' +
-                '<div class="content">' + ((row.whatFurniture.length > 32) ? row.whatFurniture.substring(0, 32) : row.whatFurniture) + '</div>' +
-                '</div>' +
-                '<div class="btns"><a class="x" onclick="CancelPickupOrDelivery(' + i +');">x</a></div>' +
-                '<div class="btns"><a class="done" onclick="Complete(' + i + ');">Completed</a></div>' +
-                '<div class="clear"> </div>' +
-                '</div>';
+            addToList(itemData[i]);
         }
     }
 
-    $('#wrapper').html(htmlStr);
 }
 
 function addToList(item) {
+  var $row =
+      $('<div class="section">' +
+      '<div class="results">' +
+      '<div class="title">Name </div>' +
+      '<div class="content">' + item.name + '</div>' +
+      '</div>' +
+      '<div class="results">' +
+      '<div class="title">Phone </div>' +
+      '<div class="content">' + item.phone + '</div>' +
+      '</div>' +
+      '<div class="results">' +
+      '<div class="title">Alt Phone </div>' +
+      '<div class="content">' + item.backupPhone + '</div>' +
+      '</div>' +
+      '<div class="results">' +
+      '<div class="title">Address </div>' +
+      '<div class="content">' + item.address + '</div>' +
+      '</div>' +
+      '<div class="results">' +
+      '<div class="title">City, State, Zip </div>' +
+      '<div class="content">' + item.city + ', ' + item.state + ' ' + item.zip + '</div>' +
+      '</div>' +
+      '<div class="results">' +
+      '<div class="title">What </div>' +
+      '<div class="content">' + ((item.whatFurniture.length > 32) ? item.whatFurniture.substring(0, 32) : item.whatFurniture) + '</div>' +
+      '</div>' +
+      '<div class="btns"><a class="cancelLink">x</a></div>' +
+      '<div class="btns"><a class="completeLink">Completed</a></div>' +
+      '<div class="clear"> </div>' +
+      '</div>');
+
+  $row.on("click", ".cancelLink", function() {
+    CancelPickupOrDelivery(item);
+  });
+  $row.on("click", ".completeLink", function() {
+    Complete(item);
+  });
+
+  $('#wrapper').append($row);
 }
 
 function removeFromList(item) {
