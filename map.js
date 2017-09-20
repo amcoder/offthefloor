@@ -10,6 +10,18 @@ var SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 
 // client spreadsheet settings
 var clientSpreadsheetId = '14AFKDSVe2Xz3PpARKDC5xIHE4zVyNXmN81_m4Fdhks8';
+var clientNewItemSheet = {
+    name: 'Form Responses 1',
+    id: 474040054
+}
+var clientInProgressSheet = {
+    name: 'In Progress',
+    id: 1446708521
+}
+var clientHistorySheet = {
+    name: 'History',
+    id: 420613236
+}
 
 // donor spreadsheet settings
 var donorSpreadsheetId = '1JNFSq8cxu1euM19om7--48upRRXguR2Hzfxd4I4Q7oc';
