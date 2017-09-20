@@ -88,8 +88,6 @@ var confirmedStatus = "Confirmed";
 var inProgressStatus = "InProgress";
 
 
-var allData = [];
-
 /**
 * Initialization and Authentication
 */
@@ -202,18 +200,19 @@ function GetFurnitureList(type, row) {
 * Initialize OTF Data from spreadsheets
 */
 function initData() {
+    var items = [];
     gapi.client.sheets.spreadsheets.values.batchGet({
         spreadsheetId: donorSpreadsheetId,
         ranges: ['Form Responses', 'In Progress', 'Confirmed'],
     }).then(function (donorResponse) {
-        convertDonorResponseToItems(donorResponse.result.valueRanges, donorSpreadsheetId);
+        items = items.concat(convertDonorResponseToItems(donorResponse.result.valueRanges, donorSpreadsheetId));
         gapi.client.sheets.spreadsheets.values.batchGet({
             spreadsheetId: clientSpreadsheetId,
             ranges: ['Form Responses 1', 'In Progress'],
         }).then(function (clientResponse) {
-            convertClientResponseToItems(clientResponse.result.valueRanges, clientSpreadsheetId);
-            initMapData(allData);
-            initList(allData);
+            items = items.concat(convertClientResponseToItems(clientResponse.result.valueRanges, clientSpreadsheetId));
+            initMapData(items);
+            initList(items);
         }, function (clientResponse) {
             alert('Error: ' + clientResponse.result.error.message);
         });
@@ -223,7 +222,7 @@ function initData() {
 }
 
 function convertDonorResponseToItems(responseValues, sheetId) {
-    allData = [];
+    var items = [];
 
     //Init data loads this range: 'Form Responses','In Progress'
     var formResponseValues = responseValues[0].values;
@@ -235,21 +234,23 @@ function convertDonorResponseToItems(responseValues, sheetId) {
 
     for (var i = 1; i < formResponseValues.length; i++) {
         var newObj = new Item(donorType, notConfirmedStatus, i + 1, formResponseValues[i], donorSpreadsheetId, donorNewItemSheet); 
-        allData.push(newObj);
+        items.push(newObj);
     }
 
     for (var i = 1; i < inProgressValues.length; i++) {
         var newObj = new Item(donorType, inProgressStatus, i + 1, inProgressValues[i], donorSpreadsheetId, donorInProgressSheet);
-        allData.push(newObj);
+        items.push(newObj);
     }
 
     for (var i = 1; i < confirmedValues.length; i++) {
         var newObj = new Item(donorType, confirmedStatus, i + 1, confirmedValues[i], donorSpreadsheetId, donorConfirmedSheet);
-        allData.push(newObj);
+        items.push(newObj);
     }
+    return items;
 }
 
 function convertClientResponseToItems(responseValues, sheetId) {
+    var items = [];
 
     //Init data loads this range: 'Form Responses','In Progress'
     var formResponseValues = responseValues[0].values;
@@ -261,13 +262,15 @@ function convertClientResponseToItems(responseValues, sheetId) {
 
     for (var i = 1; i < formResponseValues.length; i++) {
         var newObj = new ClientItem(clientType, notConfirmedStatus, i + 1, formResponseValues[i], clientSpreadsheetId, clientNewItemSheet); 
-        allData.push(newObj);
+        items.push(newObj);
     }
 
     for (var i = 1; i < inProgressValues.length; i++) {
         var newObj = new ClientItem(clientType, inProgressStatus, i + 1, inProgressValues[i], clientSpreadsheetId, clientInProgressSheet);
-        allData.push(newObj);
+        items.push(newObj);
     }
+
+    return items;
 }
 
 /**
