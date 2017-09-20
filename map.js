@@ -221,17 +221,17 @@ function convertDonorResponseToItems(responseValues, sheetId) {
     donorHeaders = formResponseValues[0];
 
     for (var i = 1; i < formResponseValues.length; i++) {
-        var newObj = new Item(donorType, notConfirmedStatus, i, formResponseValues[i], donorSpreadsheetId, "Form Responses"); 
+        var newObj = new Item(donorType, notConfirmedStatus, i + 1, formResponseValues[i], donorSpreadsheetId, "Form Responses"); 
         allData.push(newObj);
     }
 
     for (var i = 1; i < inProgressValues.length; i++) {
-        var newObj = new Item(donorType, inProgressStatus, i, inProgressValues[i], donorSpreadsheetId, "In Progress");
+        var newObj = new Item(donorType, inProgressStatus, i + 1, inProgressValues[i], donorSpreadsheetId, "In Progress");
         allData.push(newObj);
     }
 
     for (var i = 1; i < confirmedValues.length; i++) {
-        var newObj = new Item(donorType, confirmedStatus, i, confirmedValues[i], donorSpreadsheetId, "Confirmed");
+        var newObj = new Item(donorType, confirmedStatus, i + 1, confirmedValues[i], donorSpreadsheetId, "Confirmed");
         allData.push(newObj);
     }
 }
@@ -247,12 +247,12 @@ function convertClientResponseToItems(responseValues, sheetId) {
     donorHeaders = responseValues[0].values[0];
 
     for (var i = 1; i < formResponseValues.length; i++) {
-        var newObj = new ClientItem(clientType, notConfirmedStatus, i, formResponseValues[i], clientSpreadsheetId, "Form Responses 1"); 
+        var newObj = new ClientItem(clientType, notConfirmedStatus, i + 1, formResponseValues[i], clientSpreadsheetId, "Form Responses 1"); 
         allData.push(newObj);
     }
 
     for (var i = 1; i < inProgressValues.length; i++) {
-        var newObj = new ClientItem(clientType, inProgressStatus, i, inProgressValues[i], clientSpreadsheetId, "In Progress");
+        var newObj = new ClientItem(clientType, inProgressStatus, i + 1, inProgressValues[i], clientSpreadsheetId, "In Progress");
         allData.push(newObj);
     }
 }
@@ -315,7 +315,7 @@ function orderItemOnSheet(item, newindex) {
 
 function saveLocation(item) {
 
-  var range = item.sheet + '!BF' + item.rowId + ':BG' + item.rowId + 1;
+  var range = item.sheet + '!BF' + item.rowId + ':BG' + item.rowId;
   console.log("Saving to ", range);
   var request = gapi.client.sheets.spreadsheets.values.update({
     spreadsheetId: item.spreadsheet,
